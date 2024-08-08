@@ -1,3 +1,5 @@
+// ignore_for_file: invalid_annotation_target
+
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'transaction.freezed.dart';
@@ -9,6 +11,7 @@ class Transaction with _$Transaction {
     required TransactionType type,
     required double amount,
     required String transactionNo,
+    @JsonKey(fromJson: _dateTimeFromJson) required DateTime createdAt,
   }) = _Transaction;
 
   factory Transaction.fromJson(Map<String, dynamic> json) =>
@@ -30,3 +33,6 @@ enum TransactionType {
     }
   }
 }
+
+DateTime _dateTimeFromJson(int e) =>
+    DateTime.fromMillisecondsSinceEpoch(e * 1000);
