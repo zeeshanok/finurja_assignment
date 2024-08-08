@@ -1,15 +1,18 @@
+import 'package:finurja_assignment/pages/home.dart';
 import 'package:finurja_assignment/providers/data.dart';
 import 'package:finurja_assignment/providers/json_data.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 void main() {
-  setupGetIt();
+  setup();
 
   runApp(const MyApp());
 }
 
-void setupGetIt() {
+void setup() {
+  initializeDateFormatting('en_IN');
   GetIt.instance.registerSingleton<DataProvider>(JsonDataProvider('data.json'));
 }
 
@@ -20,21 +23,13 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Finurja Assignment',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: const Home(),
-    );
-  }
-}
-
-class Home extends StatelessWidget {
-  const Home({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Text("Hello World"),
+      theme: ThemeData.from(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.green,
+          brightness: Brightness.light,
+        ),
+      ).copyWith(splashFactory: NoSplash.splashFactory),
+      home: const HomePage(),
     );
   }
 }

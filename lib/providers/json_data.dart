@@ -12,7 +12,7 @@ class JsonDataProvider implements DataProvider {
 
   JsonDataProvider(this._jsonPath);
 
-  late final FutureSignal<Map<String, dynamic>> _rawData = futureSignal(
+  late final FutureSignal<Map<String, dynamic>> _rawData = computedAsync(
     () async {
       final file = File(_jsonPath);
       return jsonDecode(await file.readAsString()) as Map<String, dynamic>;
@@ -20,29 +20,30 @@ class JsonDataProvider implements DataProvider {
   );
 
   @override
-  FutureSignal<double> get aggregateBalance => futureSignal(
-        () async {
-          final data = await _rawData.future;
-          return data['aggregateBalance'] as double;
-        },
-      );
+  late final FutureSignal<double> aggregateBalance = computedAsync(
+    () async {
+      final data = await _rawData.future;
+      return (data['aggregateBalance'] as num).toDouble();
+    },
+  );
 
   @override
-  FutureSignal<Map<String, BankAccount>> get bankAccounts => futureSignal(
-        () async {
-          final data = await _rawData.future;
-          final accounts = (data['bankAccounts'] as List<dynamic>)
-              .cast<Map<String, dynamic>>();
+  late final FutureSignal<Map<String, BankAccount>> bankAccounts =
+      computedAsync(
+    () async {
+      final data = await _rawData.future;
+      final accounts =
+          (data['bankAccounts'] as List<dynamic>).cast<Map<String, dynamic>>();
 
-          return {
-            for (final acc in accounts)
-              acc['accountNo'] as String: _createAccountWithTransactionFilters(
-                acc,
-                _getTransactionFilter(acc['accountNo'] as String),
-              )
-          };
-        },
-      );
+      return {
+        for (final acc in accounts)
+          acc['accountNo'] as String: _createAccountWithTransactionFilters(
+            acc,
+            _getTransactionFilter(acc['accountNo'] as String),
+          )
+      };
+    },
+  );
 
   @override
   void setTransactionFilter(

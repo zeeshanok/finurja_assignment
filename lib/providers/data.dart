@@ -28,7 +28,7 @@ class CountFilter extends TransactionFilter {
 }
 
 class TypeFilter extends TransactionFilter {
-  final String type;
+  final TransactionType type;
 
   TypeFilter(this.type);
 
