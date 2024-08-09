@@ -1,16 +1,17 @@
 # finurja_assignment
 
-A new Flutter project.
+A banking app made for my Finurja internship candidate assignment.
 
-## Getting Started
+## Running
+Generate dummy data by running
+```bash
+python generator.py 10
+```
+where `10` is the number of bank accounts to be generated (replace with any number).
 
-This project is a starting point for a Flutter application.
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Now run
+```bash
+flutter run --release
+```
+to run the app in release mode
