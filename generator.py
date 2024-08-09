@@ -20,9 +20,9 @@ def gen_transactions() -> list[dict]:
                 "type": random.choice(transaction_types),
                 "amount": random.randint(100, 1_000_000) / 100,
                 "transactionNo": str(random.randint(100_000_000, 999_999_999)),
-                "createdAt": int(time.time() + random.randint(-600_000, 600_000)),
+                "createdAt": int(time.time() + random.randint(-25_920_000, 0)),
             }
-            for i in range(32)
+            for i in range(40)
         ),
         key=lambda x: x["createdAt"],
         reverse=True,
@@ -38,18 +38,23 @@ def gen_bank():
         "name": random.choice(bank_names),
         "balance": bal,
         "accountNo": str(random.randint(100_000, 999_999)),
-        "transactions": transactions,
     }
-    return bank
+    return bank, transactions
 
 
 n = int(argv[1])
-banks = [gen_bank() for _ in range(n)]
+d = (gen_bank() for _ in range(n))
+banks, transactions = list(zip(*d))
 agg_bal = sum([b["balance"] for b in banks])
 
 data = {
     "aggregateBalance": agg_bal,
-    "bankAccounts": banks,
+    "bankAccounts": {
+        banks[i]["accountNo"]: banks[i] for i in range(n)
+    },
+    "transactions": {
+        banks[i]["accountNo"]: transactions[i] for i in range(n)
+    }
 }
 
 with open("data.json", "w") as f:

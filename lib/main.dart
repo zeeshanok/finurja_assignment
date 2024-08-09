@@ -13,6 +13,7 @@ void main() {
 
 void setup() {
   initializeDateFormatting('en_IN');
+
   GetIt.instance.registerSingleton<DataProvider>(JsonDataProvider('data.json'));
 }
 
@@ -25,7 +26,8 @@ class MyApp extends StatelessWidget {
       title: 'Finurja Assignment',
       theme: ThemeData.from(
         colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.green,
+          dynamicSchemeVariant: DynamicSchemeVariant.vibrant,
+          seedColor: Colors.greenAccent,
           brightness: Brightness.light,
         ),
       ).copyWith(splashFactory: NoSplash.splashFactory),

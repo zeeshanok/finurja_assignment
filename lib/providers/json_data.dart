@@ -1,21 +1,25 @@
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:finurja_assignment/models/bank_account.dart';
 import 'package:finurja_assignment/models/transaction.dart';
 import 'package:finurja_assignment/providers/data.dart';
 import 'package:signals/signals.dart';
 
+import 'package:flutter/services.dart' show rootBundle;
+
 class JsonDataProvider implements DataProvider {
   final String _jsonPath;
-  final Map<String, SetSignal<TransactionFilter>> _filterMap = {};
+
+  final Map<String, Signal<TransactionFilter>> _filterMap = {};
+
+  final Map<String, ReadonlySignal<List<Transaction>>> _transactionsMap = {};
 
   JsonDataProvider(this._jsonPath);
 
   late final FutureSignal<Map<String, dynamic>> _rawData = computedAsync(
     () async {
-      final file = File(_jsonPath);
-      return jsonDecode(await file.readAsString()) as Map<String, dynamic>;
+      return jsonDecode(await rootBundle.loadString(_jsonPath))
+          as Map<String, dynamic>;
     },
   );
 
@@ -32,47 +36,58 @@ class JsonDataProvider implements DataProvider {
       computedAsync(
     () async {
       final data = await _rawData.future;
-      final accounts =
-          (data['bankAccounts'] as List<dynamic>).cast<Map<String, dynamic>>();
+      final accounts = (data['bankAccounts'] as Map<String, dynamic>);
 
       return {
-        for (final acc in accounts)
-          acc['accountNo'] as String: _createAccountWithTransactionFilters(
-            acc,
-            _getTransactionFilter(acc['accountNo'] as String),
-          )
+        for (final acc in accounts.entries)
+          acc.key: BankAccount.fromJson(acc.value)
       };
     },
   );
 
   @override
+  ReadonlySignal<List<Transaction>> getTransactions(String bankAccount) {
+    return _transactionsMap.putIfAbsent(
+      bankAccount,
+      () => computed(() {
+        final t = _rawData().value?['transactions'][bankAccount];
+        if (t != null) {
+          final rawTransactions = (t as List).cast<Map<String, dynamic>>();
+          final transactions = [
+            for (final t in rawTransactions) Transaction.fromJson(t)
+          ];
+          final filtered = _getTransactionFilter(bankAccount, () {
+            final max = transactions
+                .map((t) => t.amount)
+                .reduce((a, b) => a > b ? a : b);
+            return TransactionFilter(count: 10, max: max);
+          })()
+              .filter(transactions)
+              .toList();
+
+          return filtered;
+        }
+        throw ArgumentError('No transactions found for $bankAccount');
+      }),
+    );
+  }
+
+  @override
   void setTransactionFilter(
-      {required String bankAccount, required Set<TransactionFilter> filters}) {
-    _getTransactionFilter(bankAccount).value = filters;
+      {required String bankAccount, required TransactionFilter filter}) {
+    _getTransactionFilter(bankAccount).value = filter;
   }
 
-  SetSignal<TransactionFilter> _getTransactionFilter(String bankAccount) {
-    return _filterMap.putIfAbsent(
-        bankAccount,
-        () => <TransactionFilter>{
-              CountFilter(10),
-            }.toSignal());
+  Signal<TransactionFilter> _getTransactionFilter(String bankAccount,
+      [TransactionFilter Function()? filterCreator]) {
+    return _filterMap.putIfAbsent(bankAccount, () {
+      assert(filterCreator != null);
+      return signal(filterCreator!());
+    });
   }
-}
 
-BankAccount _createAccountWithTransactionFilters(
-    Map<String, dynamic> data, Set<TransactionFilter> filters) {
-  final base = BankAccount.fromJson(data);
-  return base.copyWith(
-    transactions: _filterTransactions(base.transactions, filters),
-  );
-}
-
-List<Transaction> _filterTransactions(
-    List<Transaction> transactions, Set<TransactionFilter> filters) {
-  Iterable<Transaction> iter = transactions;
-  for (final filter in filters) {
-    iter = filter.execute(iter);
+  @override
+  TransactionFilter getTransactionFilter(String bankAccount) {
+    return untracked(() => _getTransactionFilter(bankAccount).value);
   }
-  return iter.toList();
 }

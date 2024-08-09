@@ -1,3 +1,4 @@
+import 'package:finurja_assignment/models/bank_account.dart';
 import 'package:finurja_assignment/pages/account.dart';
 import 'package:finurja_assignment/providers/data.dart';
 import 'package:finurja_assignment/widgets/account_tile.dart';
@@ -11,8 +12,9 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: SafeArea(
+    return Scaffold(
+      appBar: AppBar(toolbarHeight: 0),
+      body: const SafeArea(
         child: _MainList(),
       ),
     );
@@ -43,6 +45,7 @@ class _MainList extends StatelessWidget {
               slivers: [
                 SliverToBoxAdapter(
                   child: SummaryTile(
+                    margin: const EdgeInsets.all(14),
                     balance: aggregateBalance.value!,
                     accountCount: accounts.length,
                   ),
@@ -56,26 +59,49 @@ class _MainList extends StatelessWidget {
                     ),
                   ),
                 ),
-                SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 6),
-                        child: AccountTile(
-                          account: accounts[index],
-                          onTap: () =>
-                              _handleTap(context, accounts[index].accountNo),
+                accounts.isNotEmpty
+                    ? _AccountsList(
+                        onPressed: (accountNo) =>
+                            _handleTap(context, accountNo),
+                        accounts: accounts,
+                      )
+                    : const SliverFillRemaining(
+                        hasScrollBody: false,
+                        child: Center(
+                          child: Text("No accounts to show"),
                         ),
-                      );
-                    },
-                    childCount: accounts.length,
-                  ),
-                ),
+                      ),
               ],
             );
           },
-          error: (e) => Text(e.toString()),
-          loading: () => const CircularProgressIndicator(),
+          error: (e) => Center(child: Text(e.toString())),
+          loading: () => const Center(child: CircularProgressIndicator()),
         );
+  }
+}
+
+class _AccountsList extends StatelessWidget {
+  const _AccountsList({
+    required this.accounts,
+    required this.onPressed,
+  });
+  final List<BankAccount> accounts;
+  final void Function(String accountNo) onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return SliverList(
+      delegate: SliverChildBuilderDelegate(
+        (context, index) {
+          return AccountTile(
+            account: accounts[index],
+            margin: const EdgeInsets.symmetric(horizontal: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 6),
+            onTap: () => onPressed(accounts[index].accountNo),
+          );
+        },
+        childCount: accounts.length,
+      ),
+    );
   }
 }

@@ -1,22 +1,24 @@
 import 'package:finurja_assignment/utils.dart';
+import 'package:finurja_assignment/widgets/colored_tile.dart';
 import 'package:flutter/material.dart';
 
 class SummaryTile extends StatelessWidget {
-  const SummaryTile(
-      {super.key, required this.balance, required this.accountCount});
+  const SummaryTile({
+    super.key,
+    required this.balance,
+    required this.accountCount,
+    this.margin,
+  });
 
   final int accountCount;
   final double balance;
+  final EdgeInsetsGeometry? margin;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.all(12),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
-        color: Theme.of(context).colorScheme.primaryContainer,
-      ),
+    return ColoredTile(
+      margin: margin,
+      color: Theme.of(context).colorScheme.primaryContainer,
       child: SelectionArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

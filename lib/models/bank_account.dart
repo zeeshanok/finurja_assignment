@@ -1,4 +1,3 @@
-import 'package:finurja_assignment/models/transaction.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'bank_account.freezed.dart';
@@ -10,7 +9,6 @@ class BankAccount with _$BankAccount {
     required String name,
     required String accountNo,
     required double balance,
-    required List<Transaction> transactions,
   }) = _BankAccount;
 
   factory BankAccount.fromJson(Map<String, dynamic> json) =>
